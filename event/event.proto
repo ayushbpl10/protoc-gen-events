@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package scopes;
+
+import "google/protobuf/descriptor.proto";
+
+option go_package="scopepb";
+
+extend google.protobuf.MethodOptions {
+    MyEvents scope = 9966;
+}
+
+message MyEvents {
+    bool event = 1;
+}
