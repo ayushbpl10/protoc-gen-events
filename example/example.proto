@@ -3,7 +3,7 @@ syntax = "proto3";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
-import "scope/scope.proto";
+import "event/event.proto";
 
 package example;
 
@@ -53,19 +53,16 @@ message UserEmail {
 
 service Users {
     rpc AddUser(User) returns (.google.protobuf.Empty){
-        option (scopes.scope) = {
-            path: "/users/{id}/cards.read/{blocked}"
+        option (events.event) = {
+            push: true
         };
     };
     rpc GetUser(GetUserReq) returns (User) {
-        option (scopes.scope) = {
-            path: "/{user_email.email}/users/{user_id}/cards/{tent_id.tent}/email/{user_email.email.checks.check.check_id.val_id}"
+        option (events.event) = {
+            push: true
         };
     };
     rpc UpdateUser(UpdateUserReq) returns (.google.protobuf.Empty){
-        option (scopes.scope) = {
-            path: "/users/{email_ids.emails}/cards.read/"
-        };
     }
 
 }

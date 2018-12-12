@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/ayushbpl10/protoc-gen-events/event"
 	"encoding/json"
-	"github.com/ayushbpl10/protoc-gen-scopes/scope"
 	"github.com/golang/protobuf/proto"
 	"github.com/lyft/protoc-gen-star"
 	"github.com/lyft/protoc-gen-star/lang/go"
@@ -14,7 +14,7 @@ type rightsGen struct {
 }
 
 func (*rightsGen) Name() string {
-	return "zap"
+	return "event"
 }
 
 func (m *rightsGen) InitContext(c pgs.BuildContext) {
@@ -24,7 +24,7 @@ func (m *rightsGen) InitContext(c pgs.BuildContext) {
 
 func (m *rightsGen) Execute(targets map[string]pgs.File, packages map[string]pgs.Package) []pgs.Artifact {
 
-	modulePath := "github.com/ayushbpl10/protoc-gen-scopes/example/"
+	modulePath := "github.com/ayushbpl10/protoc-gen-events/example/"
 
 	for _, f := range targets {
 
@@ -46,26 +46,30 @@ func (m *rightsGen) Execute(targets map[string]pgs.File, packages map[string]pgs
 
 			for _, rpc := range srv.Methods() {
 
+					missing := false
+
 					opt := rpc.Descriptor().GetOptions()
-					option, err := proto.GetExtension(opt, scopepb.E_Scope)
+					option, err := proto.GetExtension(opt, eventpb.E_Event)
 					if err != nil {
-						panic(err)
+						if err == proto.ErrMissingExtension {
+							missing = true
+						} else {
+							panic(err)
+						}
 					}
-					byteData, err := json.Marshal(option)
-					if err != nil {
-						panic(err)
-					}
-					scope := scopepb.MyScopes{}
-					err = json.Unmarshal(byteData, &scope)
-					if err != nil {
-						panic(err)
-					}
+					rpcModel := rpcModel{RpcName: rpc.Name().UpperCamelCase().String(), Input: rpc.Input().Name().UpperCamelCase().String(), Output: rpc.Output().Name().UpperCamelCase().String(), PackageName: m.Context.PackageName(f).String(), Missing:missing}
 
-					rpcModel := rpcModel{RpcName: rpc.Name().UpperCamelCase().String(), Input: rpc.Input().Name().UpperCamelCase().String(), Output: rpc.Output().Name().UpperCamelCase().String(), PackageName: m.Context.PackageName(f).String()}
-
-					for _, path :=  range scope.Path {
-						resource := Resource{ResourceStringWithCurlyBraces:path}
-						rpcModel.Resource = resource
+					if !missing{
+						byteData, err := json.Marshal(option)
+						if err != nil {
+							panic(err)
+						}
+						event := eventpb.MyEvents{}
+						err = json.Unmarshal(byteData, &event)
+						if err != nil {
+							panic(err)
+						}
+						rpcModel.Push = event.Push
 					}
 
 					service.Rpcs = append(service.Rpcs, rpcModel)
@@ -89,12 +93,8 @@ type rpcModel struct {
 	RpcName     string
 	Input       string
 	Output      string
-	Resource   Resource
-}
-
-type Resource struct {
-	ResourceStringWithCurlyBraces 	string
-	ResourceStringWithFormatter     string
+	Push        bool
+	Missing     bool
 }
 
 type serviceModel struct {

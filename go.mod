@@ -1,4 +1,4 @@
-module github.com/ayushbpl10/protoc-gen-scopes
+module github.com/ayushbpl10/protoc-gen-events
 
 require (
 	github.com/gobuffalo/packr v1.21.5
