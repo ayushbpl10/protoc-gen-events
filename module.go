@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/ayushbpl10/protoc-gen-events/event"
 	"encoding/json"
 	"github.com/golang/protobuf/proto"
+	"github.com/google/uuid"
 	"github.com/lyft/protoc-gen-star"
 	"github.com/lyft/protoc-gen-star/lang/go"
+	"pb/eventspush"
 )
 
 type rightsGen struct {
@@ -24,12 +25,12 @@ func (m *rightsGen) InitContext(c pgs.BuildContext) {
 
 func (m *rightsGen) Execute(targets map[string]pgs.File, packages map[string]pgs.Package) []pgs.Artifact {
 
-	modulePath := "github.com/ayushbpl10/protoc-gen-events/example/"
+	modulePath := "gitlab.com/appointy/services/protoc-gen-events/example/"
 
 	for _, f := range targets {
 
 
-		name := m.Context.OutputPath(f).SetExt(".scopes.go").String()
+		name := m.Context.OutputPath(f).SetExt(".events.go").String()
 		fm := fileModel{PackageName: m.Context.PackageName(f).String(), }
 		for _,im := range f.Imports() {
 			fm.Imports = append(fm.Imports, im.Descriptor().Options.GetGoPackage())
@@ -49,7 +50,7 @@ func (m *rightsGen) Execute(targets map[string]pgs.File, packages map[string]pgs
 					missing := false
 
 					opt := rpc.Descriptor().GetOptions()
-					option, err := proto.GetExtension(opt, eventpb.E_Event)
+					option, err := proto.GetExtension(opt, eventspush.E_Event)
 					if err != nil {
 						if err == proto.ErrMissingExtension {
 							missing = true
@@ -58,13 +59,14 @@ func (m *rightsGen) Execute(targets map[string]pgs.File, packages map[string]pgs
 						}
 					}
 					rpcModel := rpcModel{RpcName: rpc.Name().UpperCamelCase().String(), Input: rpc.Input().Name().UpperCamelCase().String(), Output: rpc.Output().Name().UpperCamelCase().String(), PackageName: m.Context.PackageName(f).String(), Missing:missing}
+					rpcModel.ConstantValue = uuid.Must(uuid.NewUUID()).String()
 
 					if !missing{
 						byteData, err := json.Marshal(option)
 						if err != nil {
 							panic(err)
 						}
-						event := eventpb.MyEvents{}
+						event := eventspush.MyEvents{}
 						err = json.Unmarshal(byteData, &event)
 						if err != nil {
 							panic(err)
@@ -89,12 +91,13 @@ func (m *rightsGen) Execute(targets map[string]pgs.File, packages map[string]pgs
 }
 
 type rpcModel struct {
-	PackageName string
-	RpcName     string
-	Input       string
-	Output      string
-	Push        bool
-	Missing     bool
+	PackageName   string
+	RpcName       string
+	Input         string
+	Output        string
+	Push          bool
+	Missing       bool
+	ConstantValue string
 }
 
 type serviceModel struct {

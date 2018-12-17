@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package eventspush;
+
+import "google/protobuf/descriptor.proto";
+option go_package="pb/eventspush";
+
+extend google.protobuf.MethodOptions {
+    MyEvents event = 9966;
+}
+
+message MyEvents {
+    bool push = 1;
+}
+
