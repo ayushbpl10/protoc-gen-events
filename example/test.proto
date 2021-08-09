@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package appointy.test.v1;
+
+option go_package = "pb";
+
+import "google/protobuf/field_mask.proto";
+import "eventspush/push.proto";
+
+service Tests {
+
+    // CreateTest creates new test.
+    rpc CreateTest (CreateTestRequest) returns (Test) {
+        option (eventspush.event) = {
+            push: true
+        };
+    }
+
+    // GetTest returns the test by its unique id.
+    rpc GetTest (GetTestRequest) returns (Test) {
+
+    }
+
+
+}
+
+message CreateTestRequest {
+    string parent = 1;
+    Test test = 2;
+}
+
+message GetTestRequest {
+    string id = 1;
+    google.protobuf.FieldMask view_mask = 2;
+}
+
+message Test {
+
+    string id = 1;
+
+    // fields
+}
