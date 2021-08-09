@@ -31,7 +31,7 @@ These instructions with get you started with the tool on your local machines for
 ### Installation
 1. Clone repo to your local environment.  
 	OR  
-	You can get repo directly into your GOPATH using `go get github.com/ayushbpl10/protoc-gen-events/events`
+	You can get repo directly into your GOPATH using `go get github.com/ayushbpl10/protoc-gen-events`
 2. Install crud-gen into $GOPATH using `go install .` inside the repo.
 
 ### Usage
